@@ -5,6 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import ormConfig from 'ormconfig';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -17,8 +21,10 @@ import { JwtModule } from '@nestjs/jwt';
         expiresIn: process.env.JWT_TOKEN_EXPIRY,
       },
     }),
+    AuthModule,
+    PassportModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, GoogleStrategy, JwtStrategy],
 })
 export class AppModule {}
