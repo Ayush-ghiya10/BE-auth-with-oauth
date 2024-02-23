@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { TblUsers } from 'output/entities/TblUsers';
+import { TblClient } from 'output/entities/TblClient';
 config();
 const ormConfig: TypeOrmModuleOptions = {
   type: 'mssql',
@@ -13,7 +14,7 @@ const ormConfig: TypeOrmModuleOptions = {
     encrypt: false, // MSSQL-specific option
   },
   synchronize: false,
-  entities: [TblUsers],
+  entities: [TblUsers, TblClient],
   logging: true,
 };
 export default ormConfig;

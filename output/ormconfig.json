@@ -1,0 +1,13 @@
+[
+  {
+    "name": "default",
+    "type": "mssql",
+    "host": "stg-castit-db1.castit.biz",
+    "port": 1433,
+    "username": "ACsa",
+    "password": "manimaran@3",
+    "database": "",
+    "synchronize": false,
+    "entities": ["entities/*.js"]
+  }
+]
