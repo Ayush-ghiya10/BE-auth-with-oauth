@@ -4,9 +4,10 @@ import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TblUsers } from 'output/entities/TblUsers';
 import { TblClient } from 'output/entities/TblClient';
+import { TblUsersDeleted } from 'output/entities/TblUsersDeleted';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TblUsers, TblClient])],
+  imports: [TypeOrmModule.forFeature([TblUsers, TblClient, TblUsersDeleted])],
   controllers: [UserController],
   providers: [UserService],
 })

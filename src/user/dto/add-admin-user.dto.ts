@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class AddAdminUser {
   @IsString()
@@ -13,8 +13,4 @@ export class AddAdminUser {
   @IsString()
   @IsNotEmpty()
   lastName: string;
-
-  @IsNumber()
-  @IsNotEmpty()
-  userId: number;
 }

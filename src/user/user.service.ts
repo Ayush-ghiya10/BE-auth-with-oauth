@@ -9,19 +9,58 @@ import { Repository } from 'typeorm';
 import { AddAdminUser } from './dto/add-admin-user.dto';
 import { TblClient } from 'output/entities/TblClient';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { TblUsersDeleted } from 'output/entities/TblUsersDeleted';
+import { CustomRequest } from 'src/interfaces/customRequest';
 
-import { OAuth2Client } from 'google-auth-library';
-
-const client = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-);
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(TblUsers) private userRepo: Repository<TblUsers>,
     @InjectRepository(TblClient) private clientRepo: Repository<TblClient>,
+    @InjectRepository(TblUsersDeleted)
+    private deletedUserRepo: Repository<TblUsersDeleted>,
+    private readonly jwtService: JwtService,
   ) {}
+
+  async deleteUser(userId: number, req: CustomRequest) {
+    const existUser = await this.userRepo.findOne({
+      where: { UserID: userId },
+    });
+    if (!existUser) throw new HttpException('User does not exist', 404);
+    const newDeletedUser: Partial<TblUsersDeleted> = {
+      UserID: existUser.UserID,
+      Username: existUser.Username,
+      Password: existUser.Password,
+      ClientID: existUser.ClientID,
+      FirstName: existUser.FirstName,
+      LastName: existUser.LastName,
+      Email: existUser.Email,
+      ProjectID: existUser.ProjectID,
+      AccessLevel: existUser.AccessLevel,
+      RoleID: existUser.RoleID,
+      VideoID: existUser.VideoID,
+      AgencyID: existUser.AgencyID,
+      UserTypeID: existUser.UserTypeID,
+      MsgSent: existUser.MsgSent,
+      Confirmed: existUser.Confirmed,
+      Phone1: existUser.Phone1,
+      Phone2: existUser.Phone2,
+      LocationID: existUser.LocationID,
+      TimeDate: new Date(),
+      IPAddress: req.ip,
+      DeletedBy: String(req.user.userId),
+      PasswordHash: existUser.PasswordHash,
+      IsPasswordMigrated: existUser.IsPasswordMigrated,
+    };
+    const deleteUserResponse = await this.deletedUserRepo.save(newDeletedUser);
+    return {
+      success: true,
+      res: await this.userRepo.remove(existUser),
+      deleteUserResponse,
+    };
+  }
+
   async findByEmail(email: string) {
     const existUser = await this.userRepo.findOne({
       where: { Email: email },
@@ -49,7 +88,8 @@ export class UserService {
     return existSuperAdmin;
   }
 
-  async addSuperAdmin(addAdminDto: AddAdminUser, ipAddr: string) {
+  async addSuperAdmin(addAdminDto: AddAdminUser, req: CustomRequest) {
+    console.log({ addAdminDto });
     const existUser = await this.userRepo.findOne({
       where: { Email: addAdminDto.email },
     });
@@ -74,21 +114,17 @@ export class UserService {
       ClientID: clientId,
       IsPasswordMigrated: true,
       PasswordHash: passHash,
-      CreatedBy: addAdminDto.userId,
-      IpAddress: ipAddr,
+      CreatedBy: req.user.userId,
+      IpAddress: req.ip,
     } as TblUsers;
     const response = await this.userRepo.save(newUser);
     return response;
   }
 
   async verifyToken(token: string) {
-    console.log(process.env.GOOGLE_CLIENT_ID, token);
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    const ticket = await this.jwtService.decode(token);
     // log the ticket payload in the console to see what we have
-    console.log(ticket.getPayload());
+    console.log(ticket);
     return 'test';
   }
 }
