@@ -67,7 +67,7 @@ export class UserService {
       select: { Email: true, AccessLevel: true, UserID: true, UserGUID: true },
     });
     if (!existUser) throw new HttpException('User does not exist', 404);
-    console.log(existUser);
+
     if (existUser.AccessLevel !== 0) {
       throw new UnauthorizedException('Access denied');
     }
@@ -89,7 +89,6 @@ export class UserService {
   }
 
   async addSuperAdmin(addAdminDto: AddAdminUser, req: CustomRequest) {
-    console.log({ addAdminDto });
     const existUser = await this.userRepo.findOne({
       where: { Email: addAdminDto.email },
     });

@@ -26,7 +26,6 @@ export class UserController {
 
   @Post('verifytoken')
   verifyToken(@Body('token') token: string) {
-    console.log(token);
     return this.userService.verifyToken(token);
   }
 
