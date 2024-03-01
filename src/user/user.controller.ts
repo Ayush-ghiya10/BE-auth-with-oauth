@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AddAdminUser } from './dto/add-admin-user.dto';
 import { Public } from 'src/decorators/public.decorator';
-import { CustomRequest } from 'src/interfaces/customRequest';
+import { CustomRequest } from 'types/interfaces/customRequest';
 
 @Controller('user')
 export class UserController {

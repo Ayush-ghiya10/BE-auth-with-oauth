@@ -11,7 +11,7 @@ import { TblClient } from 'output/entities/TblClient';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { TblUsersDeleted } from 'output/entities/TblUsersDeleted';
-import { CustomRequest } from 'src/interfaces/customRequest';
+import { CustomRequest } from 'types/interfaces/customRequest';
 import { OAuth2Client } from 'google-auth-library';
 
 const client = new OAuth2Client(
