@@ -12,6 +12,12 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { TblUsersDeleted } from 'output/entities/TblUsersDeleted';
 import { CustomRequest } from 'src/interfaces/customRequest';
+import { OAuth2Client } from 'google-auth-library';
+
+const client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+);
 
 @Injectable()
 export class UserService {
@@ -59,6 +65,35 @@ export class UserService {
       res: await this.userRepo.remove(existUser),
       deleteUserResponse,
     };
+  }
+
+  async findByEmailv2(access_token: string, req: CustomRequest) {
+    const ticket = await client.verifyIdToken({
+      idToken: access_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const userDetails = ticket.getPayload();
+    const existUser = await this.userRepo.findOne({
+      where: { Email: userDetails.email },
+      select: { Email: true, AccessLevel: true, UserID: true, UserGUID: true },
+    });
+    if (!existUser) throw new HttpException('User does not exist', 404);
+
+    if (existUser.AccessLevel !== 0) {
+      throw new UnauthorizedException('Access denied');
+    }
+
+    req.session['data'] = {
+      userId: existUser.UserID,
+      userGUID: existUser.UserGUID,
+      accessLevel: existUser.AccessLevel,
+      userEmail: existUser.Email,
+      image: userDetails.picture,
+    };
+
+    const token = this.jwtService.sign({ sessionId: req.sessionID });
+
+    return { success: true, token };
   }
 
   async findByEmail(email: string) {
@@ -121,10 +156,7 @@ export class UserService {
   }
 
   async verifyToken(token: string) {
-    const ticket = await this.jwtService.decode(token);
-    // log the ticket payload in the console to see what we have
-    console.log(ticket);
-    return 'test';
+    return token;
   }
 }
 function generateRandomString(length) {

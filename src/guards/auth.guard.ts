@@ -1,5 +1,3 @@
-import { DataSource } from 'typeorm';
-
 import {
   CanActivate,
   ExecutionContext,
@@ -11,15 +9,13 @@ import { JwtService } from '@nestjs/jwt';
 
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { CustomRequest } from 'src/interfaces/customRequest';
-import { TblUsers } from 'output/entities/TblUsers';
 import { JwtLoginPayload } from 'src/interfaces/jwtLoginPayload';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private jwtService: JwtService, // @InjectRepository(User) private userRepository: Repository<User>,
-    private dataSource: DataSource,
+    private jwtService: JwtService,
   ) {}
   async canActivate(context: ExecutionContext) {
     const isPublic = this.reflector.getAllAndOverride(IS_PUBLIC_KEY, [
@@ -41,11 +37,16 @@ export class AuthGuard implements CanActivate {
 
     try {
       const payload = this.jwtService.verify<JwtLoginPayload>(token);
-      const user = await this.dataSource.getRepository(TblUsers).findOne({
-        where: { UserID: payload.userId },
+      console.log('payload', payload);
+      let sessionData;
+      await req.sessionStore.get(payload.sessionId, (err, sess) => {
+        if (err) throw err;
+        if (sess) {
+          sessionData = sess['data'];
+        }
       });
-      if (!user) throw new HttpException('User does not exist', 404);
-      req['user'] = payload;
+      if (!sessionData) throw new HttpException('User does not exist', 404);
+      req['user'] = sessionData;
     } catch (error) {
       throw new HttpException(
         'Authentication required, please provide valid credentials',

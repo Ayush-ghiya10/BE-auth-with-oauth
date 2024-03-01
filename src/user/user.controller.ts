@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AddAdminUser } from './dto/add-admin-user.dto';
 import { Public } from 'src/decorators/public.decorator';
@@ -9,9 +9,12 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Public()
-  @Get()
-  findByEmail(@Query('email') email: string) {
-    return this.userService.findByEmail(email);
+  @Post()
+  findByEmail(
+    @Body('access_token') access_token: string,
+    @Req() req: CustomRequest,
+  ) {
+    return this.userService.findByEmailv2(access_token, req);
   }
 
   @Get('admin/list')

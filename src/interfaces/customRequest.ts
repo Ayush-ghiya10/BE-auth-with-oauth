@@ -1,5 +1,10 @@
 import { Request } from 'express';
-import { JwtLoginPayload } from './jwtLoginPayload';
 export interface CustomRequest extends Request {
-  user?: JwtLoginPayload;
+  user?: {
+    userId: number;
+    userGUID: string;
+    accessLevel: number;
+    userEmail: string;
+    image: string;
+  };
 }
